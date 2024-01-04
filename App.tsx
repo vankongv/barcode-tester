@@ -1,4 +1,4 @@
-import React, {Fragment, useEffect} from 'react';
+import React, {Fragment, useEffect, useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,29 +9,40 @@ import {
 import KeyEvent from 'react-native-keyevent';
 
 function App(): React.JSX.Element {
-  const [text, setText] = React.useState('');
+  const [text, setText] = useState('');
+  const [barcode] = useState<number[]>([]);
 
   //only capture if numbers
   //end capture if latest entry is `\r` and previous character was a number - maybe make it at least 5 numbers to be valid
   //after end capture, search string.
 
   useEffect(() => {
-    KeyEvent.onKeyUpListener(keyEvent => {
-      console.log('keyevent', keyEvent);
+    KeyEvent.onKeyUpListener((keyEvent: {pressedKey: string}) => {
+      // console.log('keyevent', keyEvent);
       console.log(`Key: ${keyEvent.pressedKey}`);
-      console.log(`Characters: ${keyEvent.characters}`);
-      console.log(`onKeyDown keyCode: ${keyEvent.keyCode}`);
-      console.log(`Action: ${keyEvent.action}`);
+      // console.log(`Characters: ${keyEvent.characters}`);
+      // console.log(`onKeyDown keyCode: ${keyEvent.keyCode}`);
+      // console.log(`Action: ${keyEvent.action}`);
+
+      const pressedKeyAsNumber = parseInt(keyEvent.pressedKey, 10);
+
+      if (!isNaN(pressedKeyAsNumber)) {
+        barcode.push(pressedKeyAsNumber);
+        console.log('current array = ', barcode);
+      }
 
       if (keyEvent.pressedKey === '\r') {
         console.log('bingo');
+        const barcodeString = barcode.join('');
+        console.log('barcode string = ', barcodeString);
+        barcode.length = 0;
       }
-    });
 
-    return () => {
-      KeyEvent.removeKeyUpListener();
-    };
-  }, []);
+      return () => {
+        KeyEvent.removeKeyUpListener();
+      };
+    });
+  }, [barcode]);
 
   return (
     <View style={styles.container}>
